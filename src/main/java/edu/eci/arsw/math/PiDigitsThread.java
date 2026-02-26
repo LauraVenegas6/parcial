@@ -22,8 +22,9 @@ public class PiDigitsThread extends Thread {
     }
 
     private void formulaBBP(int start, int end) {
-
-        for (int n = start; n < end; n++) {
+        long Pause = System.currentTimeMillis();
+        int procesados = 0;
+        for (int n = start; n < end; n++) { 
             double sum = 0.0;
             for (int k = 0; k <= n; k++) {
                 sum += (1.0 / Math.pow(16, k)) * 
@@ -34,8 +35,26 @@ public class PiDigitsThread extends Thread {
             }
             int digit = (int) ((sum - Math.floor(sum)) * 16);
             digits.add(digit);
+            procesados++;
+
+            if (System.currentTimeMillis() - Pause >= 5000) {
+                System.out.println("Hilo " + this.getName() + " ha procesado " + procesados + " dígitos.");
+                synchronized (lock) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                Pause = System.currentTimeMillis();
+            }
         }
-    }
+        
+        if (procesados > 0 && System.currentTimeMillis() - Pause < 5000) {
+            System.out.println("Hilo " + this.getName() + " ha procesado " + procesados + " dígitos.");
+        }
+        }
+    
 
     public List<Integer> getDigits() {
         return digits;
